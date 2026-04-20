@@ -3,7 +3,7 @@
 @description('Base name for resources')
 param baseName string
 
-@description('Azure region')
+@description('Azure region for OpenAI (may differ from other resources due to model availability)')
 param location string
 
 @description('Resource tags')
@@ -38,14 +38,14 @@ resource chatDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-1
   parent: openAi
   name: openAiModelName
   sku: {
-    name: 'Standard'
+    name: 'GlobalStandard'
     capacity: 30
   }
   properties: {
     model: {
       format: 'OpenAI'
       name: 'gpt-4o'
-      version: '2024-08-06'
+      version: '2024-11-20'
     }
   }
 }
@@ -55,7 +55,7 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
   parent: openAi
   name: embeddingModelName
   sku: {
-    name: 'Standard'
+    name: 'GlobalStandard'
     capacity: 30
   }
   properties: {

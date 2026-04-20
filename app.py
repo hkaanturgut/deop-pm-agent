@@ -36,6 +36,7 @@ async def get_memories(request: web.Request) -> web.Response:
 
 
 @routes.get("/api/health")
+@routes.get("/")
 async def health_check(_request: web.Request) -> web.Response:
     return web.json_response({"status": "healthy", "agent": "deop-pm-agent"})
 
@@ -50,8 +51,12 @@ app.router.add_static(
 
 async def on_startup(_app: web.Application):
     await memory_middleware.memory_module.listen()
-    await cosmos_db.initialize()
-    logger.info("✅ Deop PM Agent started — memory & Cosmos DB initialized")
+    try:
+        await cosmos_db.initialize()
+        logger.info("✅ Deop PM Agent started — memory & Cosmos DB initialized")
+    except Exception as e:
+        logger.warning(f"⚠️ Cosmos DB init failed (will retry on first use): {e}")
+        logger.info("✅ Deop PM Agent started — memory initialized (Cosmos DB pending)")
 
 
 async def on_shutdown(_app: web.Application):
@@ -63,4 +68,5 @@ async def on_shutdown(_app: web.Application):
 if __name__ == "__main__":
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
-    web.run_app(app, host="localhost", port=Config.PORT)
+    port = int(os.environ.get("PORT", Config.PORT))
+    web.run_app(app, host="0.0.0.0", port=port)

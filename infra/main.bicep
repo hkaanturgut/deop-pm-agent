@@ -9,6 +9,9 @@ param baseName string = 'deoopmagent'
 @description('Azure region for resources')
 param location string = resourceGroup().location
 
+@description('Azure region for OpenAI (model availability varies by region)')
+param openAiLocation string = 'eastus2'
+
 @description('Bot display name in Teams')
 param botDisplayName string = 'Deop PM Agent'
 
@@ -69,7 +72,7 @@ module aiFoundry 'modules/ai-foundry.bicep' = {
   name: 'ai-foundry-deployment'
   params: {
     baseName: baseName
-    location: location
+    location: openAiLocation
     tags: tags
     openAiModelName: openAiModelName
     embeddingModelName: embeddingModelName
