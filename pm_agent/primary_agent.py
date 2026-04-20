@@ -16,6 +16,7 @@ from pm_agent.agent import Agent, LLMConfig
 from pm_agent.cosmos_client import CosmosDBManager
 from pm_agent.prompts import system_prompt
 from pm_agent.tools import (
+    ClientReportInput,
     CreateClientInput,
     CreateProjectInput,
     CreateTaskInput,
@@ -23,16 +24,21 @@ from pm_agent.tools import (
     GetProjectStatusInput,
     ListProjectsInput,
     ListTasksInput,
+    MeetingPrepInput,
     UpdateTaskInput,
+    client_report,
     create_client,
     create_project,
     create_task,
+    daily_standup,
     get_memorized_fields,
     get_overdue_tasks,
     get_project_status,
     list_clients,
     list_projects,
     list_tasks,
+    meeting_prep,
+    smart_reminders,
     update_task,
 )
 from utils import get_logger
@@ -121,6 +127,10 @@ class PMAgent(Agent):
             "create_client": lambda: create_client(self._db, CreateClientInput.model_validate_json(fn_args)),
             "list_clients": lambda: list_clients(self._db),
             "get_memorized_fields": lambda: get_memorized_fields(memory_module, GetMemorizedFields.model_validate_json(fn_args)),
+            "daily_standup": lambda: daily_standup(self._db, self._llm_config),
+            "client_report": lambda: client_report(self._db, ClientReportInput.model_validate_json(fn_args), self._llm_config),
+            "smart_reminders": lambda: smart_reminders(self._db),
+            "meeting_prep": lambda: meeting_prep(self._db, MeetingPrepInput.model_validate_json(fn_args), self._llm_config),
         }
         handler = dispatch.get(fn_name)
         if handler:
@@ -140,6 +150,10 @@ class PMAgent(Agent):
             {"type": "function", "function": {"name": "create_client", "description": "Register a new client/organization", "parameters": CreateClientInput.model_json_schema()}},
             {"type": "function", "function": {"name": "list_clients", "description": "List all registered clients", "parameters": {"type": "object", "properties": {}, "additionalProperties": False}}},
             {"type": "function", "function": {"name": "get_memorized_fields", "description": "Recall previously memorized context about clients, projects, or patterns", "parameters": GetMemorizedFields.model_json_schema()}},
+            {"type": "function", "function": {"name": "daily_standup", "description": "Generate a daily standup summary across all projects and clients", "parameters": {"type": "object", "properties": {}, "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "client_report", "description": "Generate a detailed status report for a specific client", "parameters": ClientReportInput.model_json_schema()}},
+            {"type": "function", "function": {"name": "smart_reminders", "description": "Get proactive reminders about overdue tasks, upcoming deadlines, and blockers", "parameters": {"type": "object", "properties": {}, "additionalProperties": False}}},
+            {"type": "function", "function": {"name": "meeting_prep", "description": "Generate a meeting preparation summary with relevant project context", "parameters": MeetingPrepInput.model_json_schema()}},
         ]
 
     async def _add_internal_message(self, context: TurnContext, content: str):

@@ -9,6 +9,12 @@ from teams_memory import BaseScopedMemoryModule, Topic
 
 from pm_agent.cosmos_client import CosmosDBManager
 from pm_agent.models import TaskPriority, TaskStatus
+from pm_agent.smart_features import (
+    generate_daily_standup,
+    generate_client_report,
+    get_smart_reminders,
+    generate_meeting_prep,
+)
 
 # Memory topics the PM agent cares about
 topics = [
@@ -75,6 +81,27 @@ class CreateClientInput(BaseModel):
     contact_name: Optional[str] = Field(default=None)
     contact_email: Optional[str] = Field(default=None)
     notes: Optional[str] = Field(default=None)
+
+
+class DailyStandupInput(BaseModel):
+    model_config = {"json_schema_extra": {"additionalProperties": False}}
+    # No params needed — generates standup for all projects
+
+
+class ClientReportInput(BaseModel):
+    model_config = {"json_schema_extra": {"additionalProperties": False}}
+    client_id: str = Field(description="Client ID to generate report for")
+
+
+class SmartRemindersInput(BaseModel):
+    model_config = {"json_schema_extra": {"additionalProperties": False}}
+    # No params needed
+
+
+class MeetingPrepInput(BaseModel):
+    model_config = {"json_schema_extra": {"additionalProperties": False}}
+    meeting_subject: str = Field(description="The meeting subject/title")
+    client_id: Optional[str] = Field(default=None, description="Related client ID if known")
 
 
 class GetMemorizedFields(BaseModel):
@@ -156,6 +183,22 @@ async def create_client(db: CosmosDBManager, input: CreateClientInput) -> str:
 async def list_clients(db: CosmosDBManager) -> str:
     clients = await db.list_clients()
     return json.dumps({"count": len(clients), "clients": [c.model_dump(mode="json") for c in clients]})
+
+
+async def daily_standup(db: CosmosDBManager, llm_config: dict) -> str:
+    return await generate_daily_standup(db, llm_config)
+
+
+async def client_report(db: CosmosDBManager, input: ClientReportInput, llm_config: dict) -> str:
+    return await generate_client_report(db, input.client_id, llm_config)
+
+
+async def smart_reminders(db: CosmosDBManager) -> str:
+    return await get_smart_reminders(db)
+
+
+async def meeting_prep(db: CosmosDBManager, input: MeetingPrepInput, llm_config: dict) -> str:
+    return await generate_meeting_prep(db, input.meeting_subject, input.client_id, llm_config)
 
 
 async def get_memorized_fields(
