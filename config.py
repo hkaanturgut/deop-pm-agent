@@ -34,3 +34,6 @@ class Config:
     GRAPH_CLIENT_ID = os.environ.get("GRAPH_CLIENT_ID", None)
     GRAPH_CLIENT_SECRET = os.environ.get("GRAPH_CLIENT_SECRET", None)
     GRAPH_TENANT_ID = os.environ.get("GRAPH_TENANT_ID", None)
+
+    # Teams SSO (OAuth connection configured in Azure Bot Service)
+    SSO_CONNECTION_NAME = os.environ.get("SSO_CONNECTION_NAME", "GraphConnection")

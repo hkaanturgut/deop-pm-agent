@@ -147,9 +147,27 @@ async def generate_meeting_prep(
     meeting_subject: str,
     client_id: Optional[str] = None,
     llm_config: dict = None,
+    graph_token: Optional[str] = None,
 ) -> str:
-    """Generate a meeting prep summary with relevant project context."""
+    """Generate a meeting prep summary with relevant project context.
+
+    If graph_token is provided, also pulls upcoming calendar events
+    using delegated (SSO) Graph access.
+    """
     context_data = {"meeting": meeting_subject}
+
+    # Pull calendar context if we have a Graph token
+    if graph_token:
+        try:
+            graph = GraphCalendarClient.from_user_token(graph_token)
+            meetings = await graph.get_upcoming_meetings(days=3)
+            matching = [m for m in meetings if meeting_subject.lower() in (m.get("subject", "") or "").lower()]
+            if matching:
+                context_data["calendar_event"] = matching[0]
+            else:
+                context_data["upcoming_meetings_count"] = len(meetings)
+        except Exception as e:
+            logger.warning(f"Could not fetch calendar for meeting prep: {e}")
 
     if client_id:
         projects = await db.list_projects(client_id=client_id)

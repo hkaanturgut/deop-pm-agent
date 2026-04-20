@@ -49,9 +49,10 @@ logger = get_logger(__name__)
 class PMAgent(Agent):
     """Project Management Agent that handles task/project/client operations."""
 
-    def __init__(self, llm_config: LLMConfig, db: CosmosDBManager) -> None:
+    def __init__(self, llm_config: LLMConfig, db: CosmosDBManager, graph_token: str = None) -> None:
         self._llm_config = llm_config
         self._db = db
+        self._graph_token = graph_token  # Delegated Graph token from Teams SSO
         super().__init__()
 
     async def run(self, context: TurnContext):
@@ -130,7 +131,7 @@ class PMAgent(Agent):
             "daily_standup": lambda: daily_standup(self._db, self._llm_config),
             "client_report": lambda: client_report(self._db, ClientReportInput.model_validate_json(fn_args), self._llm_config),
             "smart_reminders": lambda: smart_reminders(self._db),
-            "meeting_prep": lambda: meeting_prep(self._db, MeetingPrepInput.model_validate_json(fn_args), self._llm_config),
+            "meeting_prep": lambda: meeting_prep(self._db, MeetingPrepInput.model_validate_json(fn_args), self._llm_config, graph_token=self._graph_token),
         }
         handler = dispatch.get(fn_name)
         if handler:

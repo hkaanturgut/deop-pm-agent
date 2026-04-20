@@ -101,7 +101,12 @@ async def on_members_added(context: TurnContext, state: TurnState):
 
 @bot_app.activity("message")
 async def on_message(context: TurnContext, state: TurnState):
-    pm_agent = PMAgent(agent_llm_config, cosmos_db)
+    from pm_agent.auth import get_user_token
+
+    # Try to get a delegated Graph token via Teams SSO
+    user_graph_token = await get_user_token(context)
+
+    pm_agent = PMAgent(agent_llm_config, cosmos_db, graph_token=user_graph_token)
     await pm_agent.run(context)
     return True
 

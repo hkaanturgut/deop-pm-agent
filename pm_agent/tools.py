@@ -197,8 +197,8 @@ async def smart_reminders(db: CosmosDBManager) -> str:
     return await get_smart_reminders(db)
 
 
-async def meeting_prep(db: CosmosDBManager, input: MeetingPrepInput, llm_config: dict) -> str:
-    return await generate_meeting_prep(db, input.meeting_subject, input.client_id, llm_config)
+async def meeting_prep(db: CosmosDBManager, input: MeetingPrepInput, llm_config: dict, graph_token: str = None) -> str:
+    return await generate_meeting_prep(db, input.meeting_subject, input.client_id, llm_config, graph_token=graph_token)
 
 
 async def get_memorized_fields(
