@@ -1,0 +1,17 @@
+[project]
+name = "deop-pm-agent"
+version = "0.1.0"
+description = "AI-powered Project Management Agent for Microsoft Teams"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "python-dotenv",
+    "aiohttp",
+    "teams-ai",
+    "botbuilder",
+    "pydantic>=2.10.3",
+    "litellm>=1.54.1",
+    "teams-memory[azure-search]>=0.1.4a0",
+    "azure-cosmos>=4.7.0",
+    "azure-identity>=1.17.0",
+]

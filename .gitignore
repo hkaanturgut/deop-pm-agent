@@ -1,0 +1,34 @@
+# TeamsFx files
+env/.env.*.user
+env/.env.local
+env/.env.testtool
+appPackage/build
+
+# others
+.deployment/
+node_modules/
+
+# Dev tool directories
+/devTools/
+
+# Environment
+.env
+.env.*
+!sample.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.egg-info/
+
+# Data
+data/memory.db
+
+# IDE
+.idea/
+*.swp
+
+# Azure
+.azure/
